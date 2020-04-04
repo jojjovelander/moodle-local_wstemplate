@@ -34,9 +34,68 @@ class local_wstemplate_external extends external_api {
         );
     }
 
+    public static function get_mock_data_parameters() {
+        return new external_function_parameters(
+            array());
+    }
+
+
+    public static function get_mock_data_returns() {
+        return new external_value(PARAM_RAW, 'JSON mock data');
+    }
+
+    public static function generateMockData($age, $population){
+        $foo = new StdClass();
+        $foo->age = $age;
+        $foo->population = $population;
+        return $foo;
+    }
+
+/*    private static function getLogReader(){
+        // Get the log manager.
+        $logreader = get_log_manager()->get_readers();
+        $logreader = reset($logreader);
+        return $logreader;
+    }*/
+
+    public static function get_mock_data(){
+        global $DB;
+
+        $sql = "SELECT l.eventname, COUNT(*) as quant
+                  FROM m_logstore_standard_log l
+                  INNER JOIN m_user u ON u.id = l.relateduserid
+                 WHERE l.courseid = 0
+                 AND l.relateduserid = 4
+                 GROUP BY l.eventname
+                 ORDER BY quant DESC";
+        $result = $DB->get_records_sql($sql);
+        $outputArray = Array();
+        $i = 0;
+        foreach ($result as $record) {
+            $outputArray[$i] = $record;
+            $i++;
+        }
+        return json_encode($outputArray);
+         /*$test = Array(
+             local_wstemplate_external::generateMockData('<5', 2704659),
+             local_wstemplate_external::generateMockData('5-13', 4499890),
+             local_wstemplate_external::generateMockData('14-17', 2159981),
+             local_wstemplate_external::generateMockData('18-24', 3853788),
+             local_wstemplate_external::generateMockData('25-44', 14106543),
+        );
+        $output = json_encode($test);
+        return $output;*/
+    }
+
     /**
      * Returns welcome message
+     * @param string $welcomemessage
      * @return string welcome message
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
      */
     public static function hello_world($welcomemessage = 'Hello world, ') {
         global $USER;
@@ -48,7 +107,7 @@ class local_wstemplate_external extends external_api {
 
         //Context validation
         //OPTIONAL but in most web service it should present
-        $context = get_context_instance(CONTEXT_USER, $USER->id);
+        $context = context_system::instance(CONTEXT_USER, $USER->id);
         self::validate_context($context);
 
         //Capability checking
@@ -57,7 +116,7 @@ class local_wstemplate_external extends external_api {
             throw new moodle_exception('cannotviewprofile');
         }
 
-        return $params['welcomemessage'] . $USER->firstname ;;
+        return $params['welcomemessage'] . $USER->firstname ;
     }
 
     /**
@@ -67,7 +126,4 @@ class local_wstemplate_external extends external_api {
     public static function hello_world_returns() {
         return new external_value(PARAM_TEXT, 'The welcome message + user first name');
     }
-
-
-
 }

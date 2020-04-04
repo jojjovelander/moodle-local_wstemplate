@@ -23,20 +23,28 @@
 
 // We defined the web service functions to install.
 $functions = array(
-        'local_wstemplate_hello_world' => array(
-                'classname'   => 'local_wstemplate_external',
-                'methodname'  => 'hello_world',
-                'classpath'   => 'local/wstemplate/externallib.php',
-                'description' => 'Return Hello World FIRSTNAME. Can change the text (Hello World) sending a new text as parameter',
-                'type'        => 'read',
-        )
+    'local_wstemplate_hello_world' => array(
+        'classname'   => 'local_wstemplate_external',
+        'methodname'  => 'hello_world',
+        'classpath'   => 'local/wstemplate/externallib.php',
+        'description' => 'Return Hello World FIRSTNAME. Can change the text (Hello World) sending a new text as parameter',
+        'type'        => 'read',
+    ),
+
+    'local_wstemplate_get_mock_data' => array(
+        'classname'   => 'local_wstemplate_external',
+        'methodname'  => 'get_mock_data',
+        'classpath'   => 'local/wstemplate/externallib.php',
+        'description' => 'Return Hello World FIRSTNAME. Can change the text (Hello World) sending a new text as parameter',
+        'type'        => 'read',
+    )
 );
 
 // We define the services to install as pre-build services. A pre-build service is not editable by administrator.
 $services = array(
-        'My service' => array(
-                'functions' => array ('local_wstemplate_hello_world'),
-                'restrictedusers' => 0,
-                'enabled'=>1,
-        )
+    'My service' => array(
+        'functions' => array ('local_wstemplate_hello_world', 'local_wstemplate_get_mock_data'),
+        'restrictedusers' => 0,
+        'enabled'=>1,
+    )
 );
