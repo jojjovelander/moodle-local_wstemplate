@@ -36,7 +36,9 @@ class local_wstemplate_external extends external_api {
 
     public static function get_mock_data_parameters() {
         return new external_function_parameters(
-            array());
+            array(
+                'courseid' => new external_value(PARAM_TEXT, 'The course id"', VALUE_DEFAULT, 0),
+                'userid' => new external_value(PARAM_TEXT, 'The user id"', VALUE_DEFAULT, 0), ));
     }
 
 
@@ -58,16 +60,62 @@ class local_wstemplate_external extends external_api {
         return $logreader;
     }*/
 
-    public static function get_mock_data(){
+    public static function get_bubble_data_parameters() {
+        return new external_function_parameters(
+            array(
+                'courseid' => new external_value(PARAM_TEXT, 'The course id"', VALUE_DEFAULT, 0),
+                'userid' => new external_value(PARAM_TEXT, 'The user id"', VALUE_DEFAULT, 0),));
+    }
+
+    public static function get_bubble_data_returns() {
+        return new external_value(PARAM_RAW, 'Returns a JSON object of all user events for a particular course');
+    }
+
+    public static function get_bubble_data($courseid, $userid){
         global $DB;
 
+        $sql = "SELECT l.eventname, l.component, COUNT(*) as count
+                  FROM m_logstore_standard_log l
+                  INNER JOIN m_user u ON u.id = l.userid
+                 WHERE l.courseid = $courseid
+                 AND l.userid = $userid
+                 GROUP BY l.component, l.eventname
+                 ORDER BY count DESC"; /*"SELECT DISTINCT count(component), component, eventname
+                FROM m_logstore_standard_log
+                WHERE userid = $userid and courseid = $courseid";*/
+
+        $result = $DB->get_records_sql($sql);
+        $outputArray = Array();
+        $i = 0;
+        foreach ($result as $record) {
+            $spiltArray = explode("\\", $record->eventname);
+            $record->eventname = $spiltArray[sizeof($spiltArray) - 1];
+            $outputArray[$i] = $record;
+            $i++;
+        }
+        return json_encode($outputArray);
+        /*$test = Array(
+            local_wstemplate_external::generateMockData('<5', 2704659),
+            local_wstemplate_external::generateMockData('5-13', 4499890),
+            local_wstemplate_external::generateMockData('14-17', 2159981),
+            local_wstemplate_external::generateMockData('18-24', 3853788),
+            local_wstemplate_external::generateMockData('25-44', 14106543),
+       );
+       $output = json_encode($test);
+       return $output;*/
+    }
+
+    public static function get_mock_data($courseid, $userid){
+        global $DB;
+        /*print_object($userid);*/
         $sql = "SELECT l.eventname, COUNT(*) as quant
                   FROM m_logstore_standard_log l
-                  INNER JOIN m_user u ON u.id = l.relateduserid
-                 WHERE l.courseid = 0
-                 AND l.relateduserid = 4
+                  INNER JOIN m_user u ON u.id = l.userid
+                 WHERE l.courseid = $courseid
+                 AND l.userid = $userid
                  GROUP BY l.eventname
                  ORDER BY quant DESC";
+
         $result = $DB->get_records_sql($sql);
         $outputArray = Array();
         $i = 0;
